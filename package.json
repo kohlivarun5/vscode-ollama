@@ -9,7 +9,6 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -19,6 +18,9 @@
       }
     ]
   },
+  "activationEvents": [
+		"*"
+	],
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
