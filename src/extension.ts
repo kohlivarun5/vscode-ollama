@@ -27,7 +27,10 @@ export function activate(context: vscode.ExtensionContext) {
 		async provideInlineCompletionItems(document, position, context, token) {
 			console.log(['provideInlineCompletionItems triggered',position,context,token]);
 			console.log(document.getText());
-			if (position.line < 0) {
+			if (context.triggerKind == vscode.InlineCompletionTriggerKind.Automatic) {
+				return;
+			}
+			if (position.line <= 0) {
 				return;
 			}
 
@@ -41,7 +44,7 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
-			let text = await submit("codellama:7b",prompt);
+			let text = await submit("codellama:7b-code",prompt);
 			console.log(text);
 
 			result.items.push({
@@ -68,7 +71,8 @@ export function activate(context: vscode.ExtensionContext) {
 		//	console.log('handleDidPartiallyAcceptCompletionItem');
 		//},
 	};
-	vscode.languages.registerInlineCompletionItemProvider({ pattern: '**' }, provider);
+	disposable = vscode.languages.registerInlineCompletionItemProvider({ pattern: '**' }, provider);
+	context.subscriptions.push(disposable);
 }
 
 // This method is called when your extension is deactivated

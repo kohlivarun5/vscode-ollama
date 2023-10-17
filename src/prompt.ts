@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import axios from 'axios';
 
 async function postRequest(data:any) {
+        console.log(`data=${JSON.stringify(data)}`);
     return axios.post(`http://127.0.0.1:11434/api/generate`,data)
     .catch(error => {
         console.log(`Failed to axios with ${error}, for data=${JSON.stringify(data)}`);
@@ -34,7 +35,7 @@ async function getResponse(response:any) {
 
 export async function submit(model:string,prompt:string) {
     const context : Array<Number> = []; 
-    const data = { model, prompt: `Finish this code:${prompt}`, context};
+    const data = { model, prompt, context};
     return postRequest(data)
     .then(getResponse)
       .catch(error => {
