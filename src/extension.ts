@@ -2,6 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { Range } from 'vscode';
+import { submit } from "./prompt";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -25,7 +26,6 @@ export function activate(context: vscode.ExtensionContext) {
 	const provider: vscode.InlineCompletionItemProvider = {
 		async provideInlineCompletionItems(document, position, context, token) {
 			console.log(['provideInlineCompletionItems triggered',position,context,token]);
-			const regexp = /\/\/ \[(.+?),(.+?)\)(.*?):(.*)/;
 			console.log(document.getText());
 			if (position.line < 0) {
 				return;
@@ -36,51 +36,20 @@ export function activate(context: vscode.ExtensionContext) {
 				//commands: [],
 			};
 
+			const prompt = document.getText()
+			if (prompt.length < 5) {
+				return;
+			}
+
+			let text = await submit("codellama:7b",prompt);
+			console.log(text);
+
 			result.items.push({
-				insertText: new vscode.SnippetString("Test"),
+				insertText: text,//new vscode.SnippetString(text),
 				range: new Range(position.line, position.character, position.line, position.character),
 				//completeBracketPairs,
 			});
-
-			let offset = 1;
-			while (offset > 0) {
-				if (position.line - offset < 0) {
-					break;
-				}
-				console.log(document.getText());
-				const lineBefore = document.lineAt(position.line - offset).text;
-				const matches = lineBefore.match(regexp);
-				if (!matches) {
-					break;
-				}
-				offset++;
-
-				const start = matches[1];
-				const startInt = parseInt(start, 10);
-				const end = matches[2];
-				const endInt =
-					end === '*'
-						? document.lineAt(position.line).text.length
-						: parseInt(end, 10);
-				const flags = matches[3];
-				const completeBracketPairs = flags.includes('b');
-				const isSnippet = flags.includes('s');
-				const text = matches[4].replace(/\\n/g, '\n');
-
-				result.items.push({
-					insertText: isSnippet ? new vscode.SnippetString(text) : text,
-					range: new Range(position.line, startInt, position.line, endInt),
-					//completeBracketPairs,
-				});
-			}
-
-			//if (result.items.length > 0) {
-			//	result.commands!.push({
-			//		command: 'demo-ext.command1',
-			//		title: 'My Inline Completion Demo Command',
-			//		arguments: [1, 2],
-			//	});
-			//}
+			
 			return result;
 		},
 
