@@ -4,6 +4,8 @@ import * as vscode from 'vscode';
 import { Range } from 'vscode';
 import { submit } from "./prompt";
 
+const delay = (ms:any) => new Promise(resolve => setTimeout(resolve, ms));
+
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
@@ -27,28 +29,29 @@ export function activate(context: vscode.ExtensionContext) {
 		async provideInlineCompletionItems(document, position, context, token) {
 			console.log(['provideInlineCompletionItems triggered',position,context,token]);
 			console.log(document.getText());
-			if (context.triggerKind == vscode.InlineCompletionTriggerKind.Automatic) {
-				return;
-			}
-			if (position.line <= 0) {
-				return;
-			}
 
 			const result: vscode.InlineCompletionList = {
 				items: [],
 				//commands: [],
 			};
+			const prompt = document.getText();
 
-			const prompt = document.getText()
-			if (prompt.length < 5) {
+
+			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic
+				|| position.line <= 0 
+				|| prompt.length < 5) {
 				return;
 			}
 
-			let text = await submit("codellama:7b-code",prompt);
+			let text = await 
+				submit("codellama:7b-code",prompt).catch((error) => {
+					console.log(error);
+					return "";
+				});
 			console.log(text);
 
 			result.items.push({
-				insertText: text,//new vscode.SnippetString(text),
+				insertText: new vscode.SnippetString(text),
 				range: new Range(position.line, position.character, position.line, position.character),
 				//completeBracketPairs,
 			});
