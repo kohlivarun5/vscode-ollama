@@ -34,25 +34,31 @@ export function activate(context: vscode.ExtensionContext) {
 				items: [],
 				//commands: [],
 			};
-			const prompt = document.getText();
 
-
-			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic
-				|| position.line <= 0 
-				|| prompt.length < 5) {
+			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic) {
 				return;
 			}
 
+			let line = document.lineAt(position.line).text;
+			const atPrompt = "@codellama"
+
+			let atPromptIndex = line.search(atPrompt);
+
+			let {prompt,model} = 
+				atPromptIndex != -1
+				? {prompt: line.substring(atPromptIndex + atPrompt.length), model:"codellama:13b-instruct"} 
+				: {prompt: document.getText(new Range(0,0,position.line,position.character)), model:"codellama:13b-python"} // chose python or code based on document
+
 			let text = await 
-				submit("codellama:7b-code",prompt).catch((error) => {
+				submit(model,prompt).catch((error) => {
 					console.log(error);
 					return "";
 				});
-			console.log(text);
+			// text = "this is a test"
 
 			result.items.push({
 				insertText: new vscode.SnippetString(text),
-				range: new Range(position.line, position.character, position.line, position.character),
+				range: new Range(position.line, position.character, position.line, position.character+text.length),
 				//completeBracketPairs,
 			});
 			
