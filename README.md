@@ -1,7 +1,5 @@
 # vscode-ollama README
 
-This is the README for your extension "vscode-ollama". After writing up a brief description, we recommend including the following sections.
-
 ## Prerequisites
 
 Download and install [`ollama`](https://ollama.ai)
