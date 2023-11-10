@@ -18,6 +18,7 @@
       }
     ]
   },
+  "extensionKind": ["ui"],
   "activationEvents": [
     "*"
   ],
