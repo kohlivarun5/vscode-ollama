@@ -31,38 +31,72 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log(document.getText());
 
 			const result: vscode.InlineCompletionList = {
-				items: [],
-				//commands: [],
-			};
-
-			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic) {
-				return;
-			}
+					items: [],
+					//commands: [],
+				};
 
 			let line = document.lineAt(position.line).text;
+
+			const atInitial = "@code"
+
+			let atInitialIndex = line.search(atInitial)
+
+			// If ends with `@code`, autocomplete the prompt
+			if (line.length === (atInitialIndex + atInitial.length)) {
+				let text = "llama "
+				result.items.push({
+					insertText: new vscode.SnippetString(text),
+					range: new Range(position.line, position.character, position.line, position.character+text.length),
+					//completeBracketPairs,
+				})
+				return result;
+			}
+
+			// Only do ollama for non-automatic trigger
+			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic) 
+			{ return; }
+
+
 			const atPrompt = "@codellama"
 
 			let atPromptIndex = line.search(atPrompt);
 
-			let {prompt,model} = 
-				atPromptIndex != -1
-				? {prompt: line.substring(atPromptIndex + atPrompt.length), model:"codellama:13b-instruct"} 
-				: {prompt: document.getText(new Range(0,0,position.line,position.character)), model:"codellama:13b-python"} // chose python or code based on document
+			const baseLlama = "codellama:13b";
 
-			let text = await 
-				submit(model,prompt).catch((error) => {
-					console.log(error);
-					return "";
+			return vscode.window.withProgress({
+				location: vscode.ProgressLocation.Window,
+				cancellable: false,
+				title: 'Calling codellama ...'
+			}, async (progress) => {
+							
+				let {prompt,model} = 
+					atPromptIndex != -1
+					? {prompt: line.substring(atPromptIndex + atPrompt.length), model:`${baseLlama}-instruct`} 
+					: {
+						prompt: document.getText(new Range(0,0,position.line,position.character)), 
+						model:  `${baseLlama}-${document.languageId === "python" ? "python" : "code"}`
+					}
+
+				progress.report({ message : ` (${model})`, increment: 10 });
+				let text = await 
+					submit(model,prompt).catch((error) => {
+						console.log(error);
+						return "";
+					});
+				// text = "this is a test"
+				if (atPromptIndex != -1) {
+					text = "\n" + text;
+				}
+				progress.report({ message : `codellama completed`, increment: 100 });
+
+				result.items.push({
+					insertText: new vscode.SnippetString(text),
+					range: new Range(position.line, position.character, position.line, position.character+text.length),
+					//completeBracketPairs,
 				});
-			// text = "this is a test"
-
-			result.items.push({
-				insertText: new vscode.SnippetString(text),
-				range: new Range(position.line, position.character, position.line, position.character+text.length),
-				//completeBracketPairs,
+				
+				return result;
 			});
-			
-			return result;
 		},
 
 		//handleDidShowCompletionItem(completionItem: vscode.InlineCompletionItem): void {
