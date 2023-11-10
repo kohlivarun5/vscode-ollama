@@ -62,8 +62,12 @@ async function getResponse(response:any) {
   }
 
 export async function submit(model:string,prompt:string) : Promise<string> {
-    const context : Array<Number> = []; 
-    const data = { model, prompt, stream:true, context, system:"Complete this code in a concise manner"};
+    const data = { 
+      model,
+      prompt,
+      stream:true,
+      raw : true
+    };
 
     let response = await postRequest(data);
     return new Promise((resolve,reject) => {

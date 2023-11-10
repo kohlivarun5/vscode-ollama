@@ -71,7 +71,13 @@ export function activate(context: vscode.ExtensionContext) {
 							
 				let {prompt,model} = 
 					atPromptIndex != -1
-					? {prompt: line.substring(atPromptIndex + atPrompt.length), model:`${baseLlama}-instruct`} 
+					? {
+						prompt: 
+							position.line === 0 || document.getText(new Range(0,0,position.line,atPromptIndex)).trim().length == 0 
+							? line.substring(atPromptIndex + atPrompt.length)
+							: `Given the following code:\n${document.getText(new Range(0,0,position.line,atPromptIndex))}\n${line.substring(atPromptIndex + atPrompt.length)}`,
+						model:`${baseLlama}-instruct`
+					} 
 					: {
 						prompt: document.getText(new Range(0,0,position.line,position.character)), 
 						model:  `${baseLlama}-${document.languageId === "python" ? "python" : "code"}`
