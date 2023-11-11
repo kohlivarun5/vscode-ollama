@@ -13,8 +13,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-ollama.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-ollama.prompt",
+        "title": "Ask codellama"
       }
     ]
   },

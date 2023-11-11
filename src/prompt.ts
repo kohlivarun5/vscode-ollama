@@ -107,3 +107,37 @@ export async function submit(model:string,prompt:string) : Promise<string> {
 
     });
 }
+
+export async function submitStream(model:string,prompt:string, onText:any) {
+  const data = { 
+    model,
+    prompt,
+    stream:true,
+    raw : true
+  };
+
+  let response = await postRequest(data);
+  const stream = response!.data;
+
+  let partialLine = '';
+  stream.on('data', (data:any) => {
+      const textChunk = new TextDecoder().decode(data);
+      const lines = (partialLine + textChunk).split('\n');
+      partialLine = lines.pop() || ""; // The last line might be incomplete
+      //console.log(data);
+      for (const line of lines) {
+          if (line.trim() === '') {continue;}
+          const parsedResponse = JSON.parse(line);
+          onText(parsedResponse.response);
+      }
+  });
+
+  stream.on('end', () => {
+      if (partialLine.trim() !== '') {
+          const parsedResponse = JSON.parse(partialLine);
+          onText(parsedResponse.response);
+      }
+      console.log("stream done");
+  });
+
+}

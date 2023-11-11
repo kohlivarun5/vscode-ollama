@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { Range } from 'vscode';
-import { submit } from "./prompt";
+import { submit, submitStream } from "./prompt";
 
 const delay = (ms:any) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -14,13 +14,39 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-ollama" is now active!');
 
+	const baseLlama = "codellama:13b";
+
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-ollama.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from VSCode Ollama!');
+	let disposable = vscode.commands.registerCommand('vscode-ollama.prompt', async () => {
+		const userPrompt = await vscode.window.showInputBox({
+			placeHolder: "codellama Prompt",
+			prompt: "Enter prompt for codellama"
+		  });
+
+		  if(!userPrompt){
+			vscode.window.showErrorMessage('No prompt provided');
+			return;
+		  }
+
+		let editor = vscode.window.activeTextEditor;
+		let model = `${baseLlama}-instruct`;
+		let prompt = userPrompt;
+		if (editor) {
+			let context = "";
+			const selection = editor.selection;
+			if (selection && !selection.isEmpty) {
+				const selectionRange = new vscode.Range(selection.start.line, selection.start.character, selection.end.line, selection.end.character);
+				context = editor.document.getText(selectionRange);
+			} else {
+				context = editor.document.getText()
+			}
+			prompt = `Given the following code:\n${context}\n${userPrompt}`;
+		}
+		let channel = vscode.window.createOutputChannel("codellama");
+		channel.show();
+		submitStream(model,prompt,channel.append);
 	});
 
 	context.subscriptions.push(disposable);
@@ -37,31 +63,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 			let line = document.lineAt(position.line).text;
 
-			const atInitial = "@code"
-
-			let atInitialIndex = line.search(atInitial)
-
-			// If ends with `@code`, autocomplete the prompt
-			if (line.length === (atInitialIndex + atInitial.length)) {
-				let text = "llama "
-				result.items.push({
-					insertText: new vscode.SnippetString(text),
-					range: new Range(position.line, position.character, position.line, position.character+text.length),
-					//completeBracketPairs,
-				})
-				return result;
-			}
-
 			// Only do ollama for non-automatic trigger
 			if (context.triggerKind === vscode.InlineCompletionTriggerKind.Automatic) 
 			{ return; }
-
-
-			const atPrompt = "@codellama"
-
-			let atPromptIndex = line.search(atPrompt);
-
-			const baseLlama = "codellama:13b";
 
 			return vscode.window.withProgress({
 				location: vscode.ProgressLocation.Window,
@@ -69,30 +73,14 @@ export function activate(context: vscode.ExtensionContext) {
 				title: 'Calling codellama ...'
 			}, async (progress) => {
 							
-				let {prompt,model} = 
-					atPromptIndex != -1
-					? {
-						prompt: 
-							position.line === 0 || document.getText(new Range(0,0,position.line,atPromptIndex)).trim().length == 0 
-							? line.substring(atPromptIndex + atPrompt.length)
-							: `Given the following code:\n${document.getText(new Range(0,0,position.line,atPromptIndex))}\n${line.substring(atPromptIndex + atPrompt.length)}`,
-						model:`${baseLlama}-instruct`
-					} 
-					: {
-						prompt: document.getText(new Range(0,0,position.line,position.character)), 
-						model:  `${baseLlama}-${document.languageId === "python" ? "python" : "code"}`
-					}
-
+				let prompt = document.getText(new Range(0,0,position.line,position.character));
+				let model = `${baseLlama}-${document.languageId === "python" ? "python" : "code"}`;
 				progress.report({ message : ` (${model})`, increment: 10 });
 				let text = await 
 					submit(model,prompt).catch((error) => {
 						console.log(error);
 						return "";
 					});
-				// text = "this is a test"
-				if (atPromptIndex != -1) {
-					text = "\n" + text;
-				}
 				progress.report({ message : `codellama completed`, increment: 100 });
 
 				result.items.push({
