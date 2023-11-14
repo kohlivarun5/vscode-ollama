@@ -14,14 +14,16 @@ export function activate(context: vscode.ExtensionContext) {
 	// This line of code will only be executed once when your extension is activated
 	console.log('Congratulations, your extension "vscode-ollama" is now active!');
 
+	let channel = vscode.window.createOutputChannel("codellama");
+
 	const baseLlama = "codellama:13b";
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('vscode-ollama.prompt', async () => {
+	let disposable = vscode.commands.registerCommand('vscode-ollama.ask', async () => {
 		const userPrompt = await vscode.window.showInputBox({
-			placeHolder: "codellama Prompt",
+			placeHolder: "Ask codellama",
 			prompt: "Enter prompt for codellama"
 		  });
 
@@ -44,12 +46,39 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 			prompt = `Given the following code:\n${context}\n${userPrompt}`;
 		}
-		let channel = vscode.window.createOutputChannel("codellama");
-		channel.show();
+		channel.show(true);
+		channel.append (`\n\n    ==>> ${userPrompt}\n\n`);
 		submitStream(model,prompt,channel.append);
 	});
 
 	context.subscriptions.push(disposable);
+
+	// A command to ask with prepopulated prompt
+
+	disposable = vscode.commands.registerCommand('vscode-ollama.explain', async () => {
+		let editor = vscode.window.activeTextEditor;
+		let model = `${baseLlama}-instruct`;
+
+		if (!editor) {
+			vscode.window.showErrorMessage('No editor selected for explanation');
+			return;
+		}
+
+		let context = "";
+		const selection = editor.selection;
+		if (selection && !selection.isEmpty) {
+			const selectionRange = new vscode.Range(selection.start.line, selection.start.character, selection.end.line, selection.end.character);
+			context = editor.document.getText(selectionRange);
+		} else {
+			context = editor.document.getText()
+		}
+		const prompt = `Given the following code:\n${context}\nProvide a clear and concise explanation of it`;
+		channel.show(true);
+		channel.append ("\n\n    ==>> Explain\n\n");
+		submitStream(model,prompt,channel.append);
+	});
+	context.subscriptions.push(disposable);
+
 
 	const provider: vscode.InlineCompletionItemProvider = {
 		async provideInlineCompletionItems(document, position, context, token) {
@@ -72,9 +101,28 @@ export function activate(context: vscode.ExtensionContext) {
 				cancellable: false,
 				title: 'Calling codellama ...'
 			}, async (progress) => {
-							
-				let prompt = document.getText(new Range(0,0,position.line,position.character));
+				let remaining = document.getText(
+					new Range(position.line,
+								position.character+1,
+								document.lineCount,
+								document.lineAt(document.lineCount-1).range.end.character)
+					).trim();
+
+				let prompt = !remaining ? document.getText() : `${
+					document.getText(
+						new Range(0,0,position.line,position.character)
+						)
+					}<FILL>${
+						document.getText(
+							new Range(position.line,
+										position.character+1,
+										document.lineCount,
+										document.lineAt(document.lineCount-1).range.end.character)
+							)
+					}`;
+
 				let model = `${baseLlama}-${document.languageId === "python" ? "python" : "code"}`;
+
 				progress.report({ message : ` (${model})`, increment: 10 });
 				let text = await 
 					submit(model,prompt).catch((error) => {

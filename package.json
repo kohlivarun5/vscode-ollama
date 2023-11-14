@@ -13,9 +13,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-ollama.prompt",
-        "title": "Ask codellama"
-      }
+        "command": "vscode-ollama.ask",
+        "title": "codellama: Ask"
+      },
+{
+      "command": "vscode-ollama.explain",
+      "title": "codellama: Explain"
+    }
     ]
   },
   "extensionKind": ["ui"],
