@@ -1,7 +1,9 @@
 {
   "name": "vscode-ollama",
   "displayName": "VSCode Ollama",
-  "description": "",
+  "description": "VSCode extension to use codellama using ollama",
+  "repository": "https://github.com/kohlivarun5/vscode-ollama",
+  "icon": "icon.png",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.83.0"

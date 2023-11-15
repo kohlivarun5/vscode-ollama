@@ -1,4 +1,4 @@
-# vscode-ollama README
+# ![](icon.png | width=100) vscode-ollama
 
 ## Prerequisites
 
