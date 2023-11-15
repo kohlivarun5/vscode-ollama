@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext) {
 			prompt = `Given the following code:\n${context}\n${userPrompt}`;
 		}
 		channel.show(true);
-		channel.append (`\n\n    ==>> ${userPrompt}\n\n`);
+		channel.append (`\n\n    🦙 ===>> ${userPrompt}\n\n`);
 		submitStream(model,prompt,channel.append);
 	});
 
@@ -74,7 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 		const prompt = `Given the following code:\n${context}\nProvide a clear and concise explanation of it`;
 		channel.show(true);
-		channel.append ("\n\n    ==>> Explain\n\n");
+		channel.append ("\n\n    🦙 ===>> Explain\n\n");
 		submitStream(model,prompt,channel.append);
 	});
 	context.subscriptions.push(disposable);
