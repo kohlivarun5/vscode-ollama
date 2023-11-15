@@ -1,4 +1,9 @@
-# ![](icon.png | width=100) vscode-ollama
+<p align="center"><img src='icon.png' width='200'/></p>
+
+<p align="center">
+<b>VScode extension to integrate with locally running codellama LLM</b>
+</p>
+
 
 ## Prerequisites
 
