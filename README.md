@@ -2,8 +2,8 @@
 
 ## Prerequisites
 
-Download and install [`ollama`](https://ollama.ai)
-Pull the 3 codellama models:
+- Download and install [`ollama`](https://ollama.ai)
+- Pull the 3 codellama models:
 ```
 ollama pull codellama:13b-instruct
 ollama pull codellama:13b-code
@@ -13,15 +13,19 @@ ollama pull codellama:13b-python
 ## Features
 
 Both the following modes (Instruct & auto-complete) are triggered using the `Trigger Inline Suggestion` command in VSCode `Cmd + Shift + P`
-**Automatic triggers are not supported**
+> _Automatic triggers are not supported_
 
-#### Instruct
-`@codellama` prompt for instruction based question answering. This uses `codellama:13b-instruct`
-Example: `@codellama Write an OCaml function to read file`
+### Instruct
+Trigger `Codellama: Ask` and provide a prompt for instruction based question answering. 
+> This uses `codellama:13b-instruct`
 
-#### Auto-complere
-Write any code and trigger a code completion for it. 
-Based on the filetype, it will use `codellama:13b-python` for Python and `codellama:13b-code` for other languages
+### Explain
+Trigger `Codellama: Explain` to explain the selected code. If no selection is provided, it will aim to explain the full document
+> This uses `codellama:13b-instruct`
+
+### Auto-complete
+Write any code and trigger a code completion for it using `Trigger Inline Completion`
+> Based on the filetype, it will use `codellama:13b-python` for Python and `codellama:13b-code` for other languages
 
 ## Known Issues
 

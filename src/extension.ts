@@ -42,7 +42,7 @@ export function activate(context: vscode.ExtensionContext) {
 				const selectionRange = new vscode.Range(selection.start.line, selection.start.character, selection.end.line, selection.end.character);
 				context = editor.document.getText(selectionRange);
 			} else {
-				context = editor.document.getText()
+				context = editor.document.getText();
 			}
 			prompt = `Given the following code:\n${context}\n${userPrompt}`;
 		}
@@ -70,7 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const selectionRange = new vscode.Range(selection.start.line, selection.start.character, selection.end.line, selection.end.character);
 			context = editor.document.getText(selectionRange);
 		} else {
-			context = editor.document.getText()
+			context = editor.document.getText();
 		}
 		const prompt = `Given the following code:\n${context}\nProvide a clear and concise explanation of it`;
 		channel.show(true);
