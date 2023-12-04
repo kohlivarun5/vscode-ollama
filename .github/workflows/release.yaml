@@ -12,9 +12,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v4.0.0
+      with:
+        node-version: 18
     - run: npm ci
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
+        node-version: 18
         repo_token: "${{ secrets.GITHUB_TOKEN }}"
         automatic_release_tag: "latest"
         prerelease: true
