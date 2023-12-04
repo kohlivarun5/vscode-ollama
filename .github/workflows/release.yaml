@@ -17,6 +17,7 @@ jobs:
       with:
         node-version: 18
     - run: npm ci
+    - run: npm run vsce
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
         node-version: 18

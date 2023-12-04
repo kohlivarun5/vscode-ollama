@@ -18,13 +18,15 @@
         "command": "vscode-ollama.ask",
         "title": "codellama: Ask"
       },
-{
-      "command": "vscode-ollama.explain",
-      "title": "codellama: Explain"
-    }
+      {
+        "command": "vscode-ollama.explain",
+        "title": "codellama: Explain"
+      }
     ]
   },
-  "extensionKind": ["ui"],
+  "extensionKind": [
+    "ui"
+  ],
   "activationEvents": [
     "*"
   ],
@@ -35,7 +37,8 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "fix": "eslint src --ext ts --fix",
-    "test": "node ./out/test/runTest.js"
+    "test": "node ./out/test/runTest.js",
+    "vsce": "npm run compile && vsce package --skip-license -o vscode-ollama.vsix --pre-release  --allow-star-activation"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.2",
@@ -44,6 +47,7 @@
     "@typescript-eslint/eslint-plugin": "^6.7.3",
     "@typescript-eslint/parser": "^6.7.3",
     "@vscode/test-electron": "^2.3.4",
+    "@vscode/vsce": "^2.22.0",
     "eslint": "^8.50.0",
     "glob": "^10.3.3",
     "mocha": "^10.2.0",
