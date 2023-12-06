@@ -24,9 +24,6 @@
       }
     ]
   },
-  "extensionKind": [
-    "ui"
-  ],
   "activationEvents": [
     "*"
   ],
